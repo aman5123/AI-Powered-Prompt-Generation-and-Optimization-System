@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0f111a;
+  --foreground: #e2e8f0;
+  --card: #1e2130;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --success: #10b981;
+  --danger: #ef4444;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.glass-panel {
+  background: rgba(30, 33, 48, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+}
