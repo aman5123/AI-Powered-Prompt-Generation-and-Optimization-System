@@ -5,11 +5,35 @@ dotenv.config();
 
 // Initialize the Gemini client
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash'; // Fallback to a real model name
+const modelName = process.env.GEMINI_MODEL || 'gemini-flash-latest'; // Fallback to a real model name
+
+const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+async function callGeminiWithRetry(options, maxRetries = 3) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await ai.models.generateContent(options);
+    } catch (error) {
+      if (error.status === 429 && attempt < maxRetries - 1) {
+        let waitTime = 5000;
+        const match = error.message && error.message.match(/retry in (\d+\.?\d*)s/);
+        if (match) {
+          waitTime = parseFloat(match[1]) * 1000 + 1000; // add 1s buffer
+        } else {
+          waitTime = 5000 * Math.pow(2, attempt);
+        }
+        console.warn(`Rate limit hit (429). Retrying in ${Math.round(waitTime)}ms... (Attempt ${attempt + 1} of ${maxRetries})`);
+        await delay(waitTime);
+      } else {
+        throw error;
+      }
+    }
+  }
+}
 
 export async function testGeminiConnection() {
   try {
-    const response = await ai.models.generateContent({
+    const response = await callGeminiWithRetry({
       model: modelName,
       contents: "Respond with exactly: 'API is working!'",
     });
@@ -51,7 +75,7 @@ Rules:
 - Calculate the score based on clarity, specificity, context, constraints, and output structure.
 `;
 
-  const response = await ai.models.generateContent({
+  const response = await callGeminiWithRetry({
     model: modelName,
     contents: originalPrompt,
     config: {
@@ -75,7 +99,7 @@ Rules:
  * Executes a prompt (original or optimized).
  */
 export async function executePrompt(promptText) {
-  const response = await ai.models.generateContent({
+  const response = await callGeminiWithRetry({
     model: modelName,
     contents: promptText,
     config: {
@@ -117,7 +141,7 @@ Evaluate both responses and return a valid JSON object matching this schema:
 }
 `;
 
-  const response = await ai.models.generateContent({
+  const response = await callGeminiWithRetry({
     model: modelName,
     contents: prompt,
     config: {

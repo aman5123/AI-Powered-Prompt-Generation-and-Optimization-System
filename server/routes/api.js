@@ -48,11 +48,9 @@ router.post('/prompts/process', async (req, res) => {
     // 1. Analyze, Optimize, and Score
     const optimizationResult = await optimizePrompt(prompt);
 
-    // 2. Execute both prompts (in parallel to save time)
-    const [originalResponseText, optimizedResponseText] = await Promise.all([
-      executePrompt(prompt),
-      executePrompt(optimizationResult.optimizedPrompt)
-    ]);
+    // 2. Execute both prompts sequentially to reduce rate limit spikes
+    const originalResponseText = await executePrompt(prompt);
+    const optimizedResponseText = await executePrompt(optimizationResult.optimizedPrompt);
 
     // 3. Compare responses
     const comparisonResult = await compareResponses(
