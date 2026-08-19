@@ -1,18 +1,165 @@
-import React from 'react';
-import { Target, Users, AlertCircle, ArrowRight, Zap, CheckCircle2, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  Target, Users, AlertCircle, ArrowRight, Zap,
+  CheckCircle2, Copy, Check, TrendingUp, Brain, MessageSquare
+} from 'lucide-react';
+
+// ─── Provider brand colours (mirrors ProviderSelector) ───────────────────────
+const PROVIDER_COLORS = {
+  gemini:     { color: '#4285F4', icon: '✦', label: 'Google Gemini' },
+  openrouter: { color: '#6C47FF', icon: '⟁', label: 'OpenRouter' },
+  groq:       { color: '#F55036', icon: '⚡', label: 'Groq' },
+  mistral:    { color: '#FF7000', icon: '◈', label: 'Mistral AI' },
+  cohere:     { color: '#39D5AA', icon: '◎', label: 'Cohere' },
+  auto:       { color: '#6b7280', icon: '🔄', label: 'Auto' },
+};
+
+// ─── Small helpers ────────────────────────────────────────────────────────────
+
+function ProviderBadge({ provider, model }) {
+  if (!provider) return null;
+  const meta = PROVIDER_COLORS[provider] || PROVIDER_COLORS.auto;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 5,
+      padding: '3px 10px', borderRadius: 20,
+      background: `${meta.color}18`, border: `1px solid ${meta.color}40`,
+      fontSize: 11, fontWeight: 600, color: meta.color,
+    }}>
+      <span>{meta.icon}</span>
+      {meta.label}
+      {model && <span style={{ color: `${meta.color}99`, fontWeight: 400 }}>· {model.split('/').pop()}</span>}
+    </span>
+  );
+}
+
+function ScoreRing({ score, size = 72, color = '#3b82f6' }) {
+  const r = (size - 8) / 2;
+  const circ = 2 * Math.PI * r;
+  const filled = circ * (score / 100);
+  return (
+    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={6} />
+      <circle
+        cx={size / 2} cy={size / 2} r={r} fill="none"
+        stroke={color} strokeWidth={6}
+        strokeDasharray={`${filled} ${circ - filled}`}
+        strokeLinecap="round"
+        style={{ transition: 'stroke-dasharray 0.8s ease' }}
+      />
+      <text
+        x={size / 2} y={size / 2}
+        textAnchor="middle" dominantBaseline="middle"
+        fill="white" fontSize={size / 4.5} fontWeight="700"
+        style={{ transform: `rotate(90deg) translate(0, -${size}px)`, transformOrigin: 'center' }}
+      >
+        {/* Rendered via foreignObject below */}
+      </text>
+    </svg>
+  );
+}
+
+function ScoreCard({ label, score, color }) {
+  const r = 30;
+  const circ = 2 * Math.PI * r;
+  const filled = circ * (score / 100);
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ position: 'relative', width: 76, height: 76, margin: '0 auto 8px' }}>
+        <svg width={76} height={76} style={{ transform: 'rotate(-90deg)' }}>
+          <circle cx={38} cy={38} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={6} />
+          <circle cx={38} cy={38} r={r} fill="none" stroke={color} strokeWidth={6}
+            strokeDasharray={`${filled} ${circ - filled}`} strokeLinecap="round"
+            style={{ transition: 'stroke-dasharray 1s ease' }}
+          />
+        </svg>
+        <div style={{
+          position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+          justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 18,
+        }}>{score}</div>
+      </div>
+      <div style={{ color: '#9ca3af', fontSize: 12 }}>{label}</div>
+    </div>
+  );
+}
+
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <button onClick={copy} title="Copy to clipboard" style={{
+      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+      borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: copied ? '#4ade80' : '#9ca3af',
+      display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, transition: 'all 0.2s',
+    }}>
+      {copied ? <Check size={12} /> : <Copy size={12} />}
+      {copied ? 'Copied!' : 'Copy'}
+    </button>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const ResultsView = ({ result }) => {
   if (!result) return null;
 
+  const provider = result.aiProvider;
+  const model = result.aiModel;
+
   return (
     <div className="w-full max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-      
-      {/* Analysis Section */}
+
+      {/* ── Provider attribution bar ─────────────────────────────────────── */}
+      {provider && provider !== 'auto' && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+          padding: '8px 16px', borderRadius: 10,
+          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+        }}>
+          <span style={{ color: '#6b7280', fontSize: 12 }}>Generated by</span>
+          <ProviderBadge provider={provider} model={model} />
+        </div>
+      )}
+
+      {/* ── Score Overview ───────────────────────────────────────────────── */}
+      <section className="glass-panel p-6 shadow-lg">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+          <h3 className="text-xl font-bold text-blue-400 flex items-center gap-2">
+            <TrendingUp size={20} className="text-blue-500" /> Score Overview
+          </h3>
+          <ProviderBadge provider={provider} model={model} />
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 40, flexWrap: 'wrap' }}>
+          <ScoreCard label="Original" score={result.promptScores?.original ?? 0} color="#6b7280" />
+          <div style={{ display: 'flex', alignItems: 'center', color: '#4b5563' }}>
+            <ArrowRight size={24} />
+          </div>
+          <ScoreCard label="Optimized" score={result.promptScores?.optimized ?? 0} color="#22d3ee" />
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{
+              textAlign: 'center', padding: '12px 20px', borderRadius: 12,
+              background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)',
+            }}>
+              <div style={{ color: '#4ade80', fontSize: 28, fontWeight: 800 }}>
+                +{result.promptScores?.improvement ?? 0}
+              </div>
+              <div style={{ color: '#6b7280', fontSize: 12 }}>improvement</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Analysis Section ─────────────────────────────────────────────── */}
       <section className="glass-panel p-6 shadow-lg">
         <h3 className="text-xl font-bold mb-6 text-blue-400 flex items-center gap-2">
           <Target className="text-blue-500" /> Prompt Analysis
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
@@ -23,10 +170,18 @@ const ResultsView = ({ result }) => {
               <h4 className="text-sm font-semibold text-gray-400 mb-1 flex items-center gap-2">
                 <Users size={16} /> Audience & Tone
               </h4>
-              <p className="text-gray-200">{result.analysis?.audience} • {result.analysis?.tone}</p>
+              <p className="text-gray-200">{result.analysis?.audience} · {result.analysis?.tone}</p>
             </div>
+            {result.analysis?.context && (
+              <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700/50">
+                <h4 className="text-sm font-semibold text-gray-400 mb-1 flex items-center gap-2">
+                  <Brain size={16} /> Context
+                </h4>
+                <p className="text-gray-200">{result.analysis?.context}</p>
+              </div>
+            )}
           </div>
-          
+
           <div className="space-y-4">
             <div className="bg-red-900/20 p-4 rounded-lg border border-red-900/50">
               <h4 className="text-sm font-semibold text-red-400 mb-2 flex items-center gap-2">
@@ -36,10 +191,18 @@ const ResultsView = ({ result }) => {
                 {result.analysis?.weaknesses?.map((w, i) => <li key={i}>{w}</li>)}
               </ul>
             </div>
+            {result.analysis?.missingInformation?.length > 0 && (
+              <div className="bg-yellow-900/15 p-4 rounded-lg border border-yellow-900/40">
+                <h4 className="text-sm font-semibold text-yellow-400 mb-2">Missing Information</h4>
+                <ul className="list-disc pl-5 text-gray-300 text-sm space-y-1">
+                  {result.analysis?.missingInformation?.map((m, i) => <li key={i}>{m}</li>)}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 
-        {result.improvements && result.improvements.length > 0 && (
+        {result.improvements?.length > 0 && (
           <div className="mt-4 bg-green-900/20 p-4 rounded-lg border border-green-900/50">
             <h4 className="text-sm font-semibold text-green-400 mb-2 flex items-center gap-2">
               <CheckCircle2 size={16} /> Key Improvements Made
@@ -51,13 +214,18 @@ const ResultsView = ({ result }) => {
         )}
       </section>
 
-      {/* Prompts Comparison */}
+      {/* ── Prompts Comparison ───────────────────────────────────────────── */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-panel p-6 border-t-4 border-t-gray-600">
-          <h3 className="text-lg font-bold mb-4 text-gray-300 flex justify-between items-center">
-            Original Prompt
-            <span className="text-2xl font-black text-gray-500">{result.promptScores?.original}/100</span>
-          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h3 className="text-lg font-bold text-gray-300 flex items-center gap-2">
+              Original Prompt
+            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className="text-2xl font-black text-gray-500">{result.promptScores?.original}/100</span>
+              <CopyButton text={result.originalPrompt} />
+            </div>
+          </div>
           <div className="bg-gray-900/80 p-4 rounded-lg text-gray-300 font-mono text-sm whitespace-pre-wrap min-h-[150px]">
             {result.originalPrompt}
           </div>
@@ -67,31 +235,35 @@ const ResultsView = ({ result }) => {
           <div className="hidden lg:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 bg-blue-600 rounded-full p-1 shadow-lg shadow-blue-500/50 text-white">
             <ArrowRight size={20} />
           </div>
-          <h3 className="text-lg font-bold mb-4 text-blue-400 flex justify-between items-center">
-            Optimized Prompt
-            <span className="text-2xl font-black text-green-400 flex items-center gap-2">
-              {result.promptScores?.optimized}/100
-              <span className="text-sm font-normal text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
-                +{result.promptScores?.improvement} pts
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h3 className="text-lg font-bold text-blue-400">Optimized Prompt</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span className="text-2xl font-black text-green-400 flex items-center gap-2">
+                {result.promptScores?.optimized}/100
+                <span className="text-sm font-normal text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
+                  +{result.promptScores?.improvement} pts
+                </span>
               </span>
-            </span>
-          </h3>
+              <CopyButton text={result.optimizedPrompt} />
+            </div>
+          </div>
           <div className="bg-gray-900/80 p-4 rounded-lg text-blue-100 font-mono text-sm whitespace-pre-wrap min-h-[150px] border border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.1)]">
             {result.optimizedPrompt}
           </div>
         </div>
       </section>
 
-      {/* Responses Comparison */}
+      {/* ── Responses Comparison ─────────────────────────────────────────── */}
       <section className="glass-panel p-6 shadow-xl border border-gray-700/50">
         <h3 className="text-xl font-bold mb-6 text-purple-400 flex items-center gap-2">
-          <Zap className="text-purple-500" /> Response Comparison
+          <MessageSquare className="text-purple-500" /> Response Comparison
         </h3>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="space-y-3">
             <h4 className="font-semibold text-gray-400 flex justify-between">
               Original Response
+              <CopyButton text={result.originalResponse} />
             </h4>
             <div className="bg-gray-900 p-5 rounded-lg text-gray-300 text-sm whitespace-pre-wrap max-h-[500px] overflow-y-auto border border-gray-800 custom-scrollbar">
               {result.originalResponse}
@@ -100,7 +272,12 @@ const ResultsView = ({ result }) => {
           <div className="space-y-3">
             <h4 className="font-semibold text-purple-400 flex justify-between items-center">
               Optimized Response
-              <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded">Score: {result.responseComparison?.optimizedScore || 'N/A'}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded">
+                  Score: {result.responseComparison?.optimizedScore ?? 'N/A'}
+                </span>
+                <CopyButton text={result.optimizedResponse} />
+              </div>
             </h4>
             <div className="bg-gray-900 p-5 rounded-lg text-gray-200 text-sm whitespace-pre-wrap max-h-[500px] overflow-y-auto border border-purple-500/30 custom-scrollbar relative">
               <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-purple-500 to-blue-500 rounded-l-lg"></div>
@@ -113,14 +290,14 @@ const ResultsView = ({ result }) => {
         <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-700">
           <h4 className="text-lg font-semibold text-white mb-4">AI Evaluation Summary</h4>
           <p className="text-gray-300 mb-6 italic border-l-2 border-purple-500 pl-4">{result.responseComparison?.overall}</p>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
             {[
               { label: 'Relevance', val: result.responseComparison?.relevance },
               { label: 'Completeness', val: result.responseComparison?.completeness },
               { label: 'Structure', val: result.responseComparison?.structure },
               { label: 'Instructions', val: result.responseComparison?.instructionFollowing },
-              { label: 'Coverage', val: result.responseComparison?.requirementCoverage }
+              { label: 'Coverage', val: result.responseComparison?.requirementCoverage },
             ].map((metric, i) => (
               <div key={i} className="bg-gray-800 p-3 rounded text-center border border-gray-700 hover:border-gray-500 transition-colors">
                 <span className="block text-gray-400 text-xs mb-1 uppercase tracking-wider">{metric.label}</span>
@@ -128,9 +305,34 @@ const ResultsView = ({ result }) => {
               </div>
             ))}
           </div>
+
+          {/* Key improvements & weaknesses */}
+          {(result.responseComparison?.keyImprovements?.length > 0 || result.responseComparison?.keyWeaknesses?.length > 0) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+              {result.responseComparison?.keyImprovements?.length > 0 && (
+                <div className="bg-green-900/15 p-4 rounded-lg border border-green-900/30">
+                  <h5 className="text-sm font-semibold text-green-400 mb-2 flex items-center gap-2">
+                    <CheckCircle2 size={14} /> Key Improvements
+                  </h5>
+                  <ul className="list-disc pl-4 text-gray-300 text-xs space-y-1">
+                    {result.responseComparison.keyImprovements.map((k, i) => <li key={i}>{k}</li>)}
+                  </ul>
+                </div>
+              )}
+              {result.responseComparison?.keyWeaknesses?.length > 0 && (
+                <div className="bg-red-900/15 p-4 rounded-lg border border-red-900/30">
+                  <h5 className="text-sm font-semibold text-red-400 mb-2 flex items-center gap-2">
+                    <AlertCircle size={14} /> Key Weaknesses
+                  </h5>
+                  <ul className="list-disc pl-4 text-gray-300 text-xs space-y-1">
+                    {result.responseComparison.keyWeaknesses.map((k, i) => <li key={i}>{k}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
-      
     </div>
   );
 };

@@ -1,23 +1,90 @@
 @import "tailwindcss";
 
+/* ─── CSS Design Tokens ──────────────────────────────────────────────────── */
 :root {
-  --background: #0f111a;
+  --background: #0b0c14;
+  --surface:    #111220;
+  --card:       #161827;
+  --border:     rgba(255,255,255,0.07);
   --foreground: #e2e8f0;
-  --card: #1e2130;
-  --primary: #3b82f6;
+  --muted:      #6b7280;
+  --primary:    #3b82f6;
   --primary-hover: #2563eb;
-  --success: #10b981;
-  --danger: #ef4444;
+  --success:    #10b981;
+  --danger:     #ef4444;
 }
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
+/* ─── Scrollbars ─────────────────────────────────────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar        { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track  { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb  { background: rgba(255,255,255,0.08); border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+/* ─── Glass Panel ────────────────────────────────────────────────────────── */
 .glass-panel {
-  background: rgba(30, 33, 48, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem;
+  background: rgba(22, 24, 39, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.glass-panel:hover {
+  border-color: rgba(255,255,255,0.11);
+  box-shadow: 0 6px 32px rgba(0,0,0,0.35);
+}
+
+/* ─── Gradient text ──────────────────────────────────────────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Animated gradient-x (used on hero heading) ─────────────────────────── */
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 4s ease infinite;
+}
+
+/* ─── Slide-in animations (used by Tailwind animate-in classes) ──────────── */
+@keyframes fade-in        { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-in-from-bottom-8 { from { transform: translateY(2rem); } to { transform: translateY(0); } }
+@keyframes slide-in-from-top-4   { from { transform: translateY(-1rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.animate-in { animation-fill-mode: both; }
+.fade-in    { animation-name: fade-in; }
+.slide-in-from-bottom-8 { animation-name: slide-in-from-bottom-8, fade-in; }
+.slide-in-from-top-4    { animation-name: slide-in-from-top-4; }
+.duration-700 { animation-duration: 700ms; }
+
+/* ─── Code / mono blocks ─────────────────────────────────────────────────── */
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.875em;
+}
+
+/* ─── Selection ─────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: #fff;
 }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PromptInput from '../components/PromptInput';
 import ResultsView from '../components/ResultsView';
 import { api } from '../services/api';
+import { activeProvider, activeModel } from '../components/Navbar';
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,11 +13,20 @@ const Dashboard = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await api.processPrompt(prompt);
+      // Read provider/model from the Navbar's ProviderSelector state
+      const provider = activeProvider || null;
+      const modelMap = activeModel || {};
+      const model = provider ? (modelMap[provider] || null) : null;
+      const data = await api.processPrompt(prompt, provider, model);
       setResult(data);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.error || err.message || 'An error occurred while processing the prompt.');
+      const details = err.response?.data?.details || err.message || 'An error occurred.';
+      const providerErrors = err.response?.data?.providerErrors;
+      setError(providerErrors?.length
+        ? `All providers failed:\n${providerErrors.join('\n')}`
+        : details
+      );
     } finally {
       setIsLoading(false);
     }
@@ -52,7 +62,7 @@ const Dashboard = () => {
             </svg>
             <p className="font-semibold tracking-wide">Error: {error}</p>
           </div>
-          <p className="text-sm mt-2 text-red-300 ml-9">Please make sure the backend server is running and your Gemini API key is valid.</p>
+          <p className="text-sm mt-2 text-red-300 ml-9">Check that your API keys are set in <code className="bg-red-900/40 px-1 rounded">server/.env</code> and the server is running. Open <strong>Providers ⚙</strong> in the navbar to see which providers are active.</p>
         </div>
       )}
 
