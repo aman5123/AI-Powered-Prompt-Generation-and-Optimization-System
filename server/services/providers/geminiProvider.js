@@ -5,9 +5,10 @@ dotenv.config();
 export const PROVIDER_NAME = 'gemini';
 
 export const AVAILABLE_MODELS = [
-  { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (free)' },
-  { id: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B (fastest, free)' },
-  { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (large context)' },
+  { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash (fastest, free)' },
+  { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (free)' },
+  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+  { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (large context)' },
 ];
 
 /**

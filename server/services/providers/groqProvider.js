@@ -5,10 +5,10 @@ export const PROVIDER_NAME = 'groq';
 const BASE_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 export const AVAILABLE_MODELS = [
-  { id: 'llama-3.3-70b-versatile', label: 'LLaMA 3.3 70B Versatile (free)' },
-  { id: 'llama3-70b-8192', label: 'LLaMA 3 70B 8192 (free)' },
-  { id: 'gemma2-9b-it', label: 'Gemma 2 9B IT (free)' },
-  { id: 'mixtral-8x7b-32768', label: 'Mixtral 8x7B 32K (free)' },
+  { id: 'openai/gpt-oss-20b', label: 'GPT-OSS 20B (fast, free)' },
+  { id: 'openai/gpt-oss-120b', label: 'GPT-OSS 120B (free)' },
+  { id: 'groq/compound', label: 'Groq Compound (free)' },
+  { id: 'qwen/qwen3.6-27b', label: 'Qwen 3.6 27B (free)' },
 ];
 
 export function isConfigured() {

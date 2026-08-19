@@ -5,11 +5,10 @@ export const PROVIDER_NAME = 'openrouter';
 const BASE_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 export const AVAILABLE_MODELS = [
-  { id: 'google/gemma-2-9b-it:free', label: 'Gemma 2 9B IT (free)' },
-  { id: 'qwen/qwen-2-7b-instruct:free', label: 'Qwen 2 7B Instruct (free)' },
-  { id: 'meta-llama/llama-3.2-3b-instruct:free', label: 'Llama 3.2 3B Instruct (free)' },
-  { id: 'deepseek/deepseek-r1:free', label: 'DeepSeek R1 (free)' },
-  { id: 'microsoft/phi-3-mini-128k-instruct:free', label: 'Phi-3 Mini 128K (free)' },
+  { id: 'liquid/lfm-2.5-2.6b:free', label: 'Liquid LFM 2.5 (free)' },
+  { id: 'dots-studio/dots-3-note-preview:free', label: 'Dots Studio 3 (free)' },
+  { id: 'nvidia/nemotron-3.5-lightning:free', label: 'NVIDIA Nemotron 3.5 (free)' },
+  { id: 'cohere/north-mini-code:free', label: 'Cohere North Mini Code (free)' },
 ];
 
 export function isConfigured() {
