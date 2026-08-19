@@ -1,8 +1,19 @@
 import axios from 'axios';
 
-// Use relative path — Vite proxy forwards /api/* → http://localhost:5000/api/*
-// Falls back to absolute URL for production deployments
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+// Dynamic API URL:
+// 1. Uses VITE_API_URL env var if set
+// 2. Uses relative /api for local dev (Vite proxy)
+// 3. Fallback to live Render backend for production deployments
+const getApiUrl = () => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return '/api';
+  }
+  return 'https://ai-powered-prompt-generation-and.onrender.com/api';
+};
+
+const API_URL = getApiUrl();
+
 
 
 export const api = {
