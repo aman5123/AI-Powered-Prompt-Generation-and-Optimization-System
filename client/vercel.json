@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://ai-powered-prompt-generation-and.onrender.com*"
+    }
+  ]
+}

@@ -8,22 +8,30 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ── CORS — allow all localhost origins (dev) + configured CLIENT_URL ─────────
-const allowedOrigins = [
+// ── CORS ─────────────────────────────────────────────────────────────────────
+// Explicitly listed origins + any *.vercel.app / *.onrender.com subdomains
+const EXPLICIT_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5174',
-  process.env.CLIENT_URL,
+  process.env.CLIENT_URL,          // e.g. https://your-app.vercel.app
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
 ].filter(Boolean);
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;                                   // curl / Postman
+  if (EXPLICIT_ORIGINS.includes(origin)) return true;        // exact match
+  if (/\.vercel\.app$/.test(origin)) return true;            // any *.vercel.app
+  if (/\.onrender\.com$/.test(origin)) return true;          // any *.onrender.com
+  return false;
+}
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (curl, Postman, server-to-server)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    console.warn(`[CORS] Blocked origin: ${origin}`);
+    if (isAllowedOrigin(origin)) return callback(null, true);
+    console.warn(`[CORS] Blocked: ${origin}`);
     callback(new Error(`CORS: origin ${origin} not allowed`));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
