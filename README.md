@@ -9,7 +9,6 @@
 
 **A full-stack AI application that analyzes, optimizes, and compares prompts across 5 free AI providers with automatic fallback.**
 
-[Live Demo](https://ai-powered-prompt-generation-and-optimiza.vercel.app) · [Report Bug](https://github.com/aman5123/AI-Powered-Prompt-Generation-and-Optimization-System/issues)
 
 </div>
 
@@ -246,5 +245,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ---
 
 <div align="center">
-Made with ❤️ by <a href="https://github.com/aman5123">aman5123</a>
+Made by <a href="https://github.com/ravikumarghec">ravikumarghec</a>
 </div>
