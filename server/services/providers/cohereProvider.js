@@ -5,8 +5,8 @@ export const PROVIDER_NAME = 'cohere';
 const BASE_URL = 'https://api.cohere.com/v2/chat';
 
 export const AVAILABLE_MODELS = [
-  { id: 'command-r', label: 'Command R (free trial)' },
-  { id: 'command-r-plus', label: 'Command R+ (advanced, free trial)' },
+  { id: 'command-r-08-2024', label: 'Command R (08-2024, free trial)' },
+  { id: 'command-r-plus-08-2024', label: 'Command R+ (08-2024, free trial)' },
   { id: 'command-light', label: 'Command Light (fastest)' },
 ];
 
@@ -24,7 +24,7 @@ export async function call(messages, options = {}) {
   const apiKey = process.env.COHERE_API_KEY;
   if (!apiKey) throw new Error('[Cohere] COHERE_API_KEY is not set.');
 
-  const model = options.model || process.env.COHERE_MODEL || 'command-r';
+  const model = options.model || process.env.COHERE_MODEL || 'command-r-08-2024';
 
   // Cohere v2 uses the same message format (role: user/assistant/system)
   const body = {

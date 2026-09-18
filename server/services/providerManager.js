@@ -128,7 +128,8 @@ export async function callWithFallback(messages, options = {}) {
     }
 
     try {
-      const model = options.model || process.env[`${name.toUpperCase()}_MODEL`] || provider.AVAILABLE_MODELS[0]?.id;
+      const isTargetProvider = !options.providerOverride || options.providerOverride.toLowerCase() === name;
+      const model = (isTargetProvider && options.model) || process.env[`${name.toUpperCase()}_MODEL`] || provider.AVAILABLE_MODELS[0]?.id;
       console.log(`[ProviderManager] 🔁 Trying provider: ${name} (model: ${model})`);
 
       const text = await provider.call(messages, { ...options, model });

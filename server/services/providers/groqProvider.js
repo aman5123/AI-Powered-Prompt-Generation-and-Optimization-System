@@ -25,7 +25,7 @@ export async function call(messages, options = {}) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error('[Groq] GROQ_API_KEY is not set.');
 
-  const model = options.model || process.env.GROQ_MODEL || 'llama3-8b-8192';
+  const model = options.model || process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
 
   const body = {
     model,

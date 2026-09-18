@@ -25,7 +25,7 @@ export async function call(messages, options = {}) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('[OpenRouter] OPENROUTER_API_KEY is not set.');
 
-  const model = options.model || process.env.OPENROUTER_MODEL || 'mistralai/mistral-7b-instruct:free';
+  const model = options.model || process.env.OPENROUTER_MODEL || 'liquid/lfm-2.5-2.6b:free';
 
   const body = {
     model,

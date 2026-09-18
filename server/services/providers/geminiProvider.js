@@ -5,10 +5,10 @@ dotenv.config();
 export const PROVIDER_NAME = 'gemini';
 
 export const AVAILABLE_MODELS = [
+  { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (free, stable)' },
+  { id: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash Lite (fast, free)' },
   { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash (fastest, free)' },
-  { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (free)' },
-  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-  { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (large context)' },
+  { id: 'gemini-flash-latest', label: 'Gemini Flash Latest' },
 ];
 
 /**
@@ -29,7 +29,7 @@ export async function call(messages, options = {}) {
   if (!apiKey) throw new Error('[Gemini] GEMINI_API_KEY is not set.');
 
   const ai = new GoogleGenAI({ apiKey });
-  const model = options.model || process.env.GEMINI_MODEL || 'gemini-2.0-flash-lite';
+  const model = options.model || process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 
   // Build contents string from messages
   const userMessages = messages.filter(m => m.role !== 'system');
